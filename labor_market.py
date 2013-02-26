@@ -46,14 +46,13 @@ labor_market = LaborMarket()
 class Worker(object):
     def __init__(self):
         self.productivity = random.paretovariate(1)
-        self._salary_ask = self.productivity * 10
         self.job = None
         self.offered_jobs = []
 
     @property
     def salary_ask(self):
         if self.job is None:
-            return self._salary_ask
+            return 0
         else:
             return self.job.salary * 1.1
 
@@ -77,13 +76,8 @@ class Worker(object):
         # search for jobs
         jobs = labor_market.find_jobs(self.productivity, self.salary_ask)
 
-        if not jobs:
-            if self.job is None:
-                # can't find a job, lower our standards
-                self._salary_ask *= .9
-        else:
-            for job in jobs:
-                job.apply_for(self)
+        for job in jobs:
+            job.apply_for(self)
 
     def offer_job(self, job):
         self.offered_jobs.append(job)
@@ -193,8 +187,16 @@ class World(object):
         return unfilled
 
     @property
-    def employer_surplus(self):
-        return sum(x.productivity - x.job.salary for x in self.employed_workers)
+    def underemployed_productivity(self):
+        return sum(x.productivity - x.job.productivity for x in self.employed_workers)
+
+    @property
+    def productivity(self):
+        return sum(x.job.productivity for x in self.employed_workers)
+
+    @property
+    def income(self):
+        return sum(x.job.salary for x in self.employed_workers)
 
 
 world = World()
@@ -202,4 +204,10 @@ world = World()
 for x in xrange(10000):
     print x,
     world.tick()
-    print world.employment, world.avg_salary, world.unfilled_jobs, world.employer_surplus, world.max_unfilled_salary
+    print world.employment, world.avg_salary, world.unfilled_jobs, world.underemployed_productivity, world.productivity, world.income
+
+print '-'*40
+workers = world.employed_workers
+workers.sort(key=lambda x: x.job.salary)
+for w in workers:
+    print w.job.salary, w.productivity
