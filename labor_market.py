@@ -168,12 +168,6 @@ class World(object):
         return float(len(self.employed_workers)) / len(self.workers)
 
     @property
-    def max_unfilled_salary(self):
-        salaries = [y.salary for x in self.employers for y in x.open_jobs]
-
-        return max(salaries)
-
-    @property
     def avg_salary(self):
         # unemployed count as 0 salary
         salaries = [x.job.salary for x in self.employed_workers]
