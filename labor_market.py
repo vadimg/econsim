@@ -60,8 +60,7 @@ class Worker(object):
         # get a job
         if self.offered_jobs:
             # pick job with highest salary
-            self.offered_jobs.sort(key=lambda x: x.salary)
-            job = self.offered_jobs[-1]
+            job = max(self.offered_jobs, key=lambda x: x.salary)
 
             if self.job is None:
                 job.take_job(self)
@@ -132,10 +131,9 @@ class Employer(object):
         for job in self.open_jobs:
             if job.applications:
                 # offer the cheapest worker the job
-                # TODO: this assumes that everyone who applied is qualified
-                # (which is true in this sim, but you should verify it as an employer IRL)
-                job.applications.sort(key=lambda x: x.salary_ask)
-                job.applications[0].offer_job(job)
+                qualified_workers = (x for x in job.applications if x.productivity >= job.productivity)
+                cheapest_worker = min(qualified_workers, key=lambda x: x.salary_ask)
+                cheapest_worker.offer_job(job)
             else:
                 # no job applications, see if we can raise salary
                 if job.salary < job.productivity:
